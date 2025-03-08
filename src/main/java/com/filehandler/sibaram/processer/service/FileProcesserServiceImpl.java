@@ -25,7 +25,7 @@ public class FileProcesserServiceImpl implements FileProcesserService {
      *              The values will be fetched and rendered using these details
      */
     @Override
-    public void processFile(MultipartFile multipartFile, int startRow, Model model) {
+    public void processFile(MultipartFile multipartFile, int startRow, int columnNumber, Model model) {
         String fileName = multipartFile.getOriginalFilename();
         if (fileName.endsWith(".csv")) {
             System.out.println("CSV file uploaded");
@@ -34,7 +34,7 @@ public class FileProcesserServiceImpl implements FileProcesserService {
             model.addAttribute("fileName", fileName);
         } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
             System.out.println("Excel file uploaded");
-            List<List<String>> data = processExcelFile(multipartFile, startRow);
+            String data = processExcelFile(multipartFile, startRow, columnNumber);
             model.addAttribute("data", data);
             model.addAttribute("fileName", fileName);
         } else {
@@ -42,21 +42,35 @@ public class FileProcesserServiceImpl implements FileProcesserService {
         }
     }
 
-    private List<List<String>> processExcelFile(MultipartFile multipartFile, int startingRow) {
-        List<List<String>> data = new ArrayList<>();
+    private String processExcelFile(MultipartFile multipartFile, int startingRow, int columnNumber) {
+        String data = null;
         try (Workbook workbook = WorkbookFactory.create(multipartFile.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
 
-            for (int rowIndex = startingRow; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
-                Row row = sheet.getRow(rowIndex);
-                if (row != null) {
-                    List<String> rowData = new ArrayList<>();
-                    for (Cell cell : row) {
-                        rowData.add(cell.toString());
-                    }
-                    data.add(rowData);
+            Row row = sheet.getRow(startingRow);
+            int columnCounter = 0;
+            for (int i = 0; i < columnNumber; i++) {
+                Cell cell = row.getCell(i);
+                System.out.println(cell.toString());
+                columnCounter++;
+                if (columnCounter == columnNumber) {
+                    System.out.println(cell.toString());
+                    data = cell.toString();
+                    return data;
                 }
             }
+
+//            for (int rowIndex = startingRow; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+//                Row row = sheet.getRow(rowIndex);
+//                if (row != null) {
+//                    List<String> rowData = new ArrayList<>();
+//                    for (Cell cell : row) {
+//                        rowData.add(cell.toString());
+//                    }
+////                    Cell columnCell = row.getCell(columnNumber).toString();
+//                    data.add(rowData);
+//                }
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }

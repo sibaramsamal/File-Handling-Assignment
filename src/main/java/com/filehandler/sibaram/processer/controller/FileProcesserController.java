@@ -24,10 +24,11 @@ public class FileProcesserController {
     @PostMapping("/upload")
     public ModelAndView uploadFile(@RequestParam("file") MultipartFile multipartFile,
                                    @RequestParam int startRow,
+                                   @RequestParam int columnNumber,
                                    Model model) {
         log.info("Uploading file for processing");
         try {
-            fileProcesserService.processFile(multipartFile, startRow, model);
+            fileProcesserService.processFile(multipartFile, startRow, columnNumber, model);
             return new ModelAndView("upload");
         } catch (Exception e) {
             model.addAttribute("error", "Error processing file: " + e.getMessage());
